@@ -9,9 +9,11 @@ defmodule Mob.Wifi.WifiBridgeTest do
 
     events = [
       [:mob_wifi, :bridge, :started],
+      [:mob_wifi, :bridge, :start],
       [:mob_wifi, :frame, :sent],
       [:mob_wifi, :frame, :send_error],
       [:mob_wifi, :frame, :received],
+      [:mob_wifi, :peer, :discovered],
       [:mob_wifi, :peer, :up],
       [:mob_wifi, :peer, :down],
       [:mob_wifi, :bridge, :error]
@@ -80,6 +82,12 @@ defmodule Mob.Wifi.WifiBridgeTest do
       assert_receive {^telemetry_ref, [:mob_wifi, :frame, :send_error], %{bytes: 5},
                       %{
                         carrier: :wifi_direct,
+                        error: %Mob.Wifi.Error{
+                          carrier: :wifi_direct,
+                          details: nil,
+                          peer_id: "peer-1",
+                          reason: :native_client_not_configured
+                        },
                         peer_id: "peer-1",
                         reason: :native_client_not_configured
                       }}
@@ -121,6 +129,9 @@ defmodule Mob.Wifi.WifiBridgeTest do
       assert_receive {:transport_down, "peer-1"}
       assert_receive {^telemetry_ref, [:mob_wifi, :peer, :up], %{count: 1}, %{peer_id: "peer-1"}}
 
+      assert_receive {^telemetry_ref, [:mob_wifi, :peer, :discovered], %{count: 1},
+                      %{carrier: :wifi_direct, peer_id: "peer-1"}}
+
       assert_receive {^telemetry_ref, [:mob_wifi, :frame, :received], %{bytes: 5},
                       %{peer_id: "peer-1"}}
 
@@ -139,7 +150,15 @@ defmodule Mob.Wifi.WifiBridgeTest do
       assert_receive {:transport_error, {:unknown_native_event, %{bad: true}}}
 
       assert_receive {^telemetry_ref, [:mob_wifi, :bridge, :error], %{count: 1},
-                      %{reason: {:unknown_native_event, %{bad: true}}}}
+                      %{
+                        error: %Mob.Wifi.Error{
+                          carrier: nil,
+                          details: %{event: %{bad: true}},
+                          peer_id: nil,
+                          reason: {:unknown_native_event, %{bad: true}}
+                        },
+                        reason: {:unknown_native_event, %{bad: true}}
+                      }}
 
       GenServer.stop(bridge)
     end

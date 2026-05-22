@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0
+
+- Add `Mob.Wifi.Error` structured error metadata.
+- Add telemetry aliases and a full telemetry event specification.
+- Add property-based tests for config validation and frame-size handling.
+- Add Dependabot for Mix and GitHub Actions updates.
+- Improve CI caching for Dialyzer PLTs.
+
 ## 0.1.0
 
 - Add initial `mob_wifi` package skeleton.

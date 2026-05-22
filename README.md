@@ -90,10 +90,13 @@ Mob.Wifi.WifiBridge.stop(bridge)
 The bridge emits low-cardinality telemetry events:
 
 - `[:mob_wifi, :bridge, :started]`
+- `[:mob_wifi, :bridge, :start]`
 - `[:mob_wifi, :bridge, :stopped]`
+- `[:mob_wifi, :bridge, :stop]`
 - `[:mob_wifi, :frame, :sent]`
 - `[:mob_wifi, :frame, :send_error]`
 - `[:mob_wifi, :frame, :received]`
+- `[:mob_wifi, :peer, :discovered]`
 - `[:mob_wifi, :peer, :up]`
 - `[:mob_wifi, :peer, :down]`
 - `[:mob_wifi, :bridge, :error]`
@@ -132,3 +135,4 @@ Additional docs:
 - `docs/PLUGIN_LOADING.md`
 - `docs/SECURITY.md`
 - `docs/TESTING.md`
+- `docs/TELEMETRY.md`

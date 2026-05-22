@@ -2,7 +2,7 @@ defmodule Mob.Wifi.MixProject do
   use Mix.Project
 
   @github_url "https://github.com/dl-alexandre/mob_wifi"
-  @version "0.1.0"
+  @version "0.2.0"
   @description "Production WiFi transport plugin for mob with validated Android WiFi Direct, iOS Multipeer, and cross-platform Bonjour/TCP carrier policy."
 
   def project do
@@ -28,6 +28,7 @@ defmodule Mob.Wifi.MixProject do
           "docs/PLUGIN_LOADING.md",
           "docs/SECURITY.md",
           "docs/TESTING.md",
+          "docs/TELEMETRY.md",
           "CHANGELOG.md",
           "CONTRIBUTING.md",
           "LICENSE"
@@ -48,6 +49,7 @@ defmodule Mob.Wifi.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:nimble_options, "~> 1.1"},
+      {:stream_data, "~> 1.2", only: :test},
       {:telemetry, "~> 1.3"},
       {:ex_doc, "~> 0.40.2", only: :dev, runtime: false}
     ]
@@ -74,6 +76,7 @@ defmodule Mob.Wifi.MixProject do
         lib
         priv/mob_plugin.exs
         docs
+        .github/dependabot.yml
         .github/workflows/ci.yml
         .formatter.exs
         .dialyzer_ignore.exs

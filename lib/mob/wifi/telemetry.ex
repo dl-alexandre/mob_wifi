@@ -15,4 +15,11 @@ defmodule Mob.Wifi.Telemetry do
 
     :ok
   end
+
+  @doc false
+  @spec execute_many([[atom()]], map(), map()) :: :ok
+  def execute_many(events, measurements, metadata \\ %{}) do
+    Enum.each(events, &execute(&1, measurements, metadata))
+    :ok
+  end
 end
