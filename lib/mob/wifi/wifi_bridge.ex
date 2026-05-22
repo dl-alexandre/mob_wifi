@@ -13,6 +13,10 @@ defmodule Mob.Wifi.WifiBridge do
     @behaviour Mob.Transport
   end
 
+  require Logger
+
+  alias Mob.Wifi.Telemetry
+
   @default_max_frame_bytes 256 * 1024
 
   @type native_client :: module()
@@ -59,7 +63,24 @@ defmodule Mob.Wifi.WifiBridge do
           @default_max_frame_bytes
     }
 
+    Logger.metadata(mob_wifi_carrier: state.carrier)
+
+    Telemetry.execute([:mob_wifi, :bridge, :started], %{system_time: System.system_time()}, %{
+      carrier: state.carrier,
+      max_frame_bytes: state.max_frame_bytes
+    })
+
     {:ok, state}
+  end
+
+  @impl true
+  def terminate(reason, state) do
+    Telemetry.execute([:mob_wifi, :bridge, :stopped], %{system_time: System.system_time()}, %{
+      carrier: state.carrier,
+      reason: reason
+    })
+
+    :ok
   end
 
   @impl true
@@ -68,6 +89,8 @@ defmodule Mob.Wifi.WifiBridge do
       with :ok <- check_frame_size(frame, state.max_frame_bytes) do
         send_native(state.native_client, peer_id, frame, opts)
       end
+
+    emit_send_telemetry(reply, peer_id, frame, state)
 
     {:reply, reply, state}
   end
@@ -126,16 +149,22 @@ defmodule Mob.Wifi.WifiBridge do
   end
 
   defp emit_event({:peer_up, peer_id, metadata}, event_target) when is_map(metadata) do
+    Telemetry.execute([:mob_wifi, :peer, :up], %{count: 1}, %{peer_id: to_string(peer_id)})
     send(event_target, {:transport_up, to_string(peer_id), metadata})
     :ok
   end
 
   defp emit_event({:peer_down, peer_id}, event_target) do
+    Telemetry.execute([:mob_wifi, :peer, :down], %{count: 1}, %{peer_id: to_string(peer_id)})
     send(event_target, {:transport_down, to_string(peer_id)})
     :ok
   end
 
   defp emit_event({:frame, peer_id, frame}, event_target) when is_binary(frame) do
+    Telemetry.execute([:mob_wifi, :frame, :received], %{bytes: byte_size(frame)}, %{
+      peer_id: to_string(peer_id)
+    })
+
     send(event_target, {:frame, to_string(peer_id), frame})
     :ok
   end
@@ -156,8 +185,24 @@ defmodule Mob.Wifi.WifiBridge do
 
   defp emit_event(event, event_target) do
     reason = {:unknown_native_event, event}
+    Telemetry.execute([:mob_wifi, :bridge, :error], %{count: 1}, %{reason: reason})
     send(event_target, {:transport_error, reason})
     {:error, reason}
+  end
+
+  defp emit_send_telemetry(:ok, peer_id, frame, state) do
+    Telemetry.execute([:mob_wifi, :frame, :sent], %{bytes: byte_size(frame)}, %{
+      carrier: state.carrier,
+      peer_id: to_string(peer_id)
+    })
+  end
+
+  defp emit_send_telemetry({:error, reason}, peer_id, frame, state) do
+    Telemetry.execute([:mob_wifi, :frame, :send_error], %{bytes: byte_size(frame)}, %{
+      carrier: state.carrier,
+      peer_id: to_string(peer_id),
+      reason: reason
+    })
   end
 
   defp normalize_metadata(metadata) when is_map(metadata), do: metadata

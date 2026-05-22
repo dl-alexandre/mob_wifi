@@ -13,6 +13,15 @@ The initial bridge only implements the `:wifi_direct` startup path. The other
 carriers are manifest-level commitments and documentation targets until native
 code and hardware evidence are available.
 
+## Decision Matrix
+
+| Carrier | Range | Power | Discovery Time | Reliability | Platform Limits |
+| --- | --- | --- | --- | --- | --- |
+| Android WiFi Direct | Medium | Medium during discovery, better for large transfers | Medium | Good after group formation | Android-only and permission-sensitive |
+| iOS Multipeer | Short to medium | OS-managed | Usually fast | Good for iOS peers | Apple ecosystem only |
+| Bonjour/TCP | Network-dependent | Good after association | Depends on topology | Good with TCP, custom work for UDP | Requires shared IP topology |
+| WiFi Aware | Short to medium | Designed for discovery efficiency | Fast when supported | Android feature-gated, deferred |
+
 ## Platform Notes
 
 Android exposes WiFi Direct through `WifiP2pManager`. That is the right first

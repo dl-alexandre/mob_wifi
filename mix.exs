@@ -21,8 +21,12 @@ defmodule Mob.Wifi.MixProject do
         extras: [
           "README.md",
           "docs/CARRIER_DECISION.md",
+          "docs/CARRIER_IMPLEMENTATION.md",
           "docs/MIGRATION.md",
+          "docs/SECURITY.md",
+          "docs/TESTING.md",
           "CHANGELOG.md",
+          "CONTRIBUTING.md",
           "LICENSE"
         ]
       ]
@@ -32,12 +36,13 @@ defmodule Mob.Wifi.MixProject do
   def application do
     [
       mod: {MobWifi.Application, []},
-      extra_applications: [:logger]
+      extra_applications: [:logger, :telemetry]
     ]
   end
 
   defp deps do
     [
+      {:telemetry, "~> 1.3"},
       {:ex_doc, "~> 0.40.2", only: :dev, runtime: false}
     ]
   end
@@ -55,9 +60,12 @@ defmodule Mob.Wifi.MixProject do
         lib
         priv/mob_plugin.exs
         docs
+        .github/workflows/ci.yml
+        .formatter.exs
         mix.exs
         README.md
         CHANGELOG.md
+        CONTRIBUTING.md
         LICENSE
       )
     ]
