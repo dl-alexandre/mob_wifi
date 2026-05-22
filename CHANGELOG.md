@@ -8,6 +8,7 @@
 - Add Dependabot for Mix and GitHub Actions updates.
 - Improve CI caching for Dialyzer PLTs.
 - Add attached-device hardware readiness checks and hardware validation docs.
+- Add opt-in hardware readiness tests and a manual self-hosted hardware workflow.
 
 ## 0.1.0
 
