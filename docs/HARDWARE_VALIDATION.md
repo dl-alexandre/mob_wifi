@@ -45,8 +45,20 @@ end
 Run them explicitly:
 
 ```bash
-mix test --include hardware
+mix test --only hardware
 ```
+
+The current hardware suite checks the readiness lanes that can be validated
+without native carrier implementations:
+
+- Android WiFi Direct capability across two attached Android devices.
+- iOS Multipeer capability across two online iOS devices.
+- Bonjour/TCP cross-platform coverage with at least one Android and one iOS
+  device.
+- WiFi Aware readiness reporting, without failing when the lab has only one
+  Aware-capable Android device.
+- Optional configured device IDs via `MOB_WIFI_ANDROID_A`,
+  `MOB_WIFI_ANDROID_B`, `MOB_WIFI_IOS_A`, and `MOB_WIFI_IOS_B`.
 
 ## Validation Lanes
 
@@ -66,3 +78,7 @@ runs-on: [self-hosted, macOS, mob-wifi-hardware]
 ```
 
 Do not add hardware jobs to public hosted runners.
+
+The repository includes a `Hardware` workflow that is manual-only
+(`workflow_dispatch`) and targets that runner label set. It will not run on
+GitHub-hosted runners.
