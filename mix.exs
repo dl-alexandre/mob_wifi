@@ -80,6 +80,7 @@ defmodule Mob.Wifi.MixProject do
         docs
         .github/dependabot.yml
         .github/workflows/ci.yml
+        .github/workflows/hardware.yml
         .formatter.exs
         .dialyzer_ignore.exs
         mix.exs
