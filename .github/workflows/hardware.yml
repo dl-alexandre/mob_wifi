@@ -1,0 +1,42 @@
+name: Hardware
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  attached-devices:
+    name: Attached device validation
+    runs-on: [self-hosted, macOS, mob-wifi-hardware]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19"
+          otp-version: "28"
+
+      - name: Cache deps
+        uses: actions/cache@v4
+        with:
+          path: |
+            deps
+            _build
+            _build/plts
+          key: hardware-${{ runner.os }}-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            hardware-${{ runner.os }}-
+
+      - name: Install deps
+        run: mix deps.get
+
+      - name: Hardware readiness
+        run: mix mob_wifi.hardware.check
+
+      - name: Hardware tests
+        run: mix test --only hardware
