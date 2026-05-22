@@ -24,6 +24,7 @@ defmodule Mob.Wifi.MixProject do
           "docs/CARRIER_DECISION.md",
           "docs/CARRIER_IMPLEMENTATION.md",
           "docs/MIGRATION.md",
+          "docs/HARDWARE_VALIDATION.md",
           "docs/PERFORMANCE.md",
           "docs/PLUGIN_LOADING.md",
           "docs/SECURITY.md",
@@ -57,6 +58,7 @@ defmodule Mob.Wifi.MixProject do
 
   defp dialyzer do
     [
+      plt_add_apps: [:mix],
       plt_local_path: "_build/plts",
       plt_core_path: "_build/plts",
       ignore_warnings: ".dialyzer_ignore.exs"

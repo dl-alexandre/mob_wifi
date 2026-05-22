@@ -44,7 +44,7 @@ jobs:
         run: mix format --check-formatted
 
       - name: Test
-        run: mix test
+        run: mix test --no-start
 
       - name: Credo
         run: mix credo --strict

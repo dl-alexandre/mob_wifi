@@ -7,6 +7,7 @@
 - Add property-based tests for config validation and frame-size handling.
 - Add Dependabot for Mix and GitHub Actions updates.
 - Improve CI caching for Dialyzer PLTs.
+- Add attached-device hardware readiness checks and hardware validation docs.
 
 ## 0.1.0
 

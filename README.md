@@ -131,6 +131,7 @@ mix test
 Additional docs:
 
 - `docs/CARRIER_IMPLEMENTATION.md`
+- `docs/HARDWARE_VALIDATION.md`
 - `docs/PERFORMANCE.md`
 - `docs/PLUGIN_LOADING.md`
 - `docs/SECURITY.md`
