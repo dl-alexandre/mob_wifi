@@ -46,7 +46,7 @@ See `docs/CARRIER_DECISION.md` for the full carrier policy.
 config :mob_wifi, config: [
   carrier: :wifi_direct,
   platform: :android,
-  evidence_mode: :production,
+  mode: :production,
   max_frame_bytes: 262_144
 ]
 ```
@@ -107,6 +107,17 @@ The bridge emits low-cardinality telemetry events:
 5. Integrate Mob identity and frame encryption requirements.
 6. Publish to Hex once the public API stabilizes.
 
+## Configuration
+
+Configuration is validated with NimbleOptions. `:mode` controls runtime
+strictness:
+
+- `:production` keeps strict carrier policy and conservative defaults.
+- `:test` is for hardware validation and may use shorter retry intervals.
+- `:simulation` is for non-native local development.
+
+The older `:evidence_mode` key remains accepted as a compatibility alias.
+
 ## Validation
 
 ```bash
@@ -117,5 +128,7 @@ mix test
 Additional docs:
 
 - `docs/CARRIER_IMPLEMENTATION.md`
+- `docs/PERFORMANCE.md`
+- `docs/PLUGIN_LOADING.md`
 - `docs/SECURITY.md`
 - `docs/TESTING.md`

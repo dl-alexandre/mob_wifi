@@ -5,6 +5,9 @@ defmodule Mob.Wifi.CarrierRejectedError do
 
   defexception [:carrier, :reason]
 
+  alias Mob.Wifi
+  alias Mob.Wifi.Config
+
   @type t :: %__MODULE__{carrier: atom() | term(), reason: atom() | binary() | nil}
 
   @impl true
@@ -13,9 +16,9 @@ defmodule Mob.Wifi.CarrierRejectedError do
     Mob.Wifi: carrier #{inspect(carrier)} is rejected.
 
     Reason: #{inspect(reason || :unsupported_carrier)}
-    Supported carriers are #{inspect(Mob.Wifi.Config.supported_carriers())}.
-    Validated bridge carriers are #{inspect(Mob.Wifi.Config.validated_carriers())}.
-    The primary carrier is #{inspect(Mob.Wifi.carrier())}.
+    Supported carriers are #{inspect(Config.supported_carriers())}.
+    Validated bridge carriers are #{inspect(Config.validated_carriers())}.
+    The primary carrier is #{inspect(Wifi.carrier())}.
     """
   end
 end

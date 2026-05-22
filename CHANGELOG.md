@@ -6,3 +6,4 @@
 - Add WiFi carrier policy, config validation, plugin manifest, and bridge lifecycle.
 - Add carrier decision and migration docs.
 - Add carrier behaviour, telemetry events, CI workflow, and production-readiness docs.
+- Add NimbleOptions config validation, documented runtime modes, and CI quality checks.

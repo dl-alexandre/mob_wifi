@@ -6,7 +6,48 @@ defmodule Mob.Wifi.Config do
   @supported_carriers [:wifi_direct, :multipeer, :bonjour_tcp]
   @validated_carriers [:wifi_direct]
   @platforms [:android, :ios]
-  @evidence_modes [:production, :diagnostic]
+  @modes [:production, :test, :simulation]
+  @discovery_modes [:native, :bonjour, :manual]
+
+  @schema [
+    carrier: [
+      type: {:in, @supported_carriers},
+      doc: "WiFi carrier requested by deployment configuration."
+    ],
+    platform: [
+      type: {:in, @platforms},
+      doc: "Host mobile platform."
+    ],
+    mode: [
+      type: {:in, @modes},
+      default: :production,
+      doc: "Runtime strictness mode: :production, :test, or :simulation."
+    ],
+    evidence_mode: [
+      type: {:in, [:production, :diagnostic]},
+      doc: "Deprecated alias for :mode. :diagnostic maps to :test."
+    ],
+    max_frame_bytes: [
+      type: :pos_integer,
+      default: 256 * 1024,
+      doc: "Maximum binary frame size accepted by the bridge."
+    ],
+    discovery: [
+      type: {:in, @discovery_modes},
+      default: :native,
+      doc: "Discovery path used by the carrier adapter."
+    ],
+    log_level: [
+      type: :atom,
+      default: :info,
+      doc: "Logger level used by host integrations."
+    ],
+    native?: [
+      type: :boolean,
+      default: true,
+      doc: "Whether native carrier code is expected to be available."
+    ]
+  ]
 
   @doc "Returns carriers recognized by the plugin manifest."
   @spec supported_carriers() :: [:wifi_direct | :multipeer | :bonjour_tcp]
@@ -16,68 +57,63 @@ defmodule Mob.Wifi.Config do
   @spec validated_carriers() :: [:wifi_direct]
   def validated_carriers, do: @validated_carriers
 
-  @doc false
+  @doc "Returns the validation schema used for deployment configuration."
+  @spec schema() :: keyword()
+  def schema, do: @schema
+
+  @doc """
+  Validates deployment configuration.
+
+  Unknown keys are tolerated for forward compatibility. Unsupported carrier
+  values still raise `Mob.Wifi.CarrierRejectedError` to preserve the strict
+  policy contract used by plugin activation.
+  """
   @spec validate(keyword() | map()) :: :ok | {:error, term()}
   def validate(config) do
-    cfg = Map.new(Enum.to_list(config))
+    config
+    |> normalize_config()
+    |> validate_options()
+  end
 
-    with :ok <- check_carrier(cfg),
-         :ok <- check_platform(cfg),
-         :ok <- check_evidence_mode(cfg),
-         :ok <- check_max_frame_bytes(cfg),
-         :ok <- check_discovery(cfg),
-         :ok <- check_log_level(cfg) do
-      check_native(cfg)
+  defp normalize_config(config) do
+    config
+    |> Enum.to_list()
+    |> Keyword.new()
+    |> normalize_mode_alias()
+  end
+
+  defp normalize_mode_alias(config) do
+    case Keyword.fetch(config, :evidence_mode) do
+      {:ok, :diagnostic} ->
+        config
+        |> Keyword.put_new(:mode, :test)
+        |> Keyword.delete(:evidence_mode)
+
+      {:ok, :production} ->
+        config
+        |> Keyword.put_new(:mode, :production)
+        |> Keyword.delete(:evidence_mode)
+
+      :error ->
+        config
+
+      {:ok, other} ->
+        Keyword.put(config, :evidence_mode, other)
     end
   end
 
-  defp check_carrier(%{carrier: carrier}) when carrier in @supported_carriers, do: :ok
+  defp validate_options(config) do
+    case NimbleOptions.validate(config, @schema) do
+      {:ok, _validated} ->
+        :ok
 
-  defp check_carrier(%{carrier: carrier}) do
-    raise Mob.Wifi.CarrierRejectedError,
-      carrier: carrier,
-      reason: :unsupported_carrier
+      {:error, %NimbleOptions.ValidationError{key: :carrier, value: carrier}} ->
+        raise Mob.Wifi.CarrierRejectedError,
+          carrier: carrier,
+          reason: :unsupported_carrier
+
+      {:error, %NimbleOptions.ValidationError{key: key, value: value}} ->
+        {:error, {:invalid_config, key, value}}
+    end
   end
-
-  defp check_carrier(_cfg), do: :ok
-
-  defp check_platform(%{platform: platform}) when platform in @platforms, do: :ok
-  defp check_platform(%{platform: platform}), do: {:error, {:invalid_config, :platform, platform}}
-  defp check_platform(_cfg), do: :ok
-
-  defp check_evidence_mode(%{evidence_mode: mode}) when mode in @evidence_modes, do: :ok
-
-  defp check_evidence_mode(%{evidence_mode: mode}) do
-    {:error, {:invalid_config, :evidence_mode, mode}}
-  end
-
-  defp check_evidence_mode(_cfg), do: :ok
-
-  defp check_max_frame_bytes(%{max_frame_bytes: bytes}) when is_integer(bytes) and bytes > 0 do
-    :ok
-  end
-
-  defp check_max_frame_bytes(%{max_frame_bytes: bytes}) do
-    {:error, {:invalid_config, :max_frame_bytes, bytes}}
-  end
-
-  defp check_max_frame_bytes(_cfg), do: :ok
-
-  defp check_discovery(%{discovery: discovery}) when discovery in [:native, :bonjour, :manual] do
-    :ok
-  end
-
-  defp check_discovery(%{discovery: discovery}) do
-    {:error, {:invalid_config, :discovery, discovery}}
-  end
-
-  defp check_discovery(_cfg), do: :ok
-
-  defp check_log_level(%{log_level: level}) when is_atom(level), do: :ok
-  defp check_log_level(%{log_level: level}), do: {:error, {:invalid_config, :log_level, level}}
-  defp check_log_level(_cfg), do: :ok
-
-  defp check_native(%{native?: native?}) when is_boolean(native?), do: :ok
-  defp check_native(%{native?: native?}), do: {:error, {:invalid_config, :native?, native?}}
-  defp check_native(_cfg), do: :ok
 end

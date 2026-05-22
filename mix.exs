@@ -16,6 +16,7 @@ defmodule Mob.Wifi.MixProject do
       package: package(),
       source_url: @github_url,
       homepage_url: @github_url,
+      dialyzer: dialyzer(),
       docs: [
         main: "readme",
         extras: [
@@ -23,6 +24,8 @@ defmodule Mob.Wifi.MixProject do
           "docs/CARRIER_DECISION.md",
           "docs/CARRIER_IMPLEMENTATION.md",
           "docs/MIGRATION.md",
+          "docs/PERFORMANCE.md",
+          "docs/PLUGIN_LOADING.md",
           "docs/SECURITY.md",
           "docs/TESTING.md",
           "CHANGELOG.md",
@@ -42,8 +45,19 @@ defmodule Mob.Wifi.MixProject do
 
   defp deps do
     [
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
+      {:nimble_options, "~> 1.1"},
       {:telemetry, "~> 1.3"},
       {:ex_doc, "~> 0.40.2", only: :dev, runtime: false}
+    ]
+  end
+
+  defp dialyzer do
+    [
+      plt_local_path: "_build/plts",
+      plt_core_path: "_build/plts",
+      ignore_warnings: ".dialyzer_ignore.exs"
     ]
   end
 
@@ -62,6 +76,7 @@ defmodule Mob.Wifi.MixProject do
         docs
         .github/workflows/ci.yml
         .formatter.exs
+        .dialyzer_ignore.exs
         mix.exs
         README.md
         CHANGELOG.md

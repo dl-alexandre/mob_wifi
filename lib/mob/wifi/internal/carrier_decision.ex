@@ -1,14 +1,16 @@
 defmodule Mob.Wifi.Internal.CarrierDecision do
   @moduledoc false
 
+  alias Mob.Wifi.Config
+
   @doc "Returns a stable summary of the current carrier decision."
   @spec summary() :: map()
   def summary do
     %{
       primary_carrier: :wifi_direct,
       bridge_status: :skeleton,
-      validated_carriers: Mob.Wifi.Config.validated_carriers(),
-      recognized_carriers: Mob.Wifi.Config.supported_carriers(),
+      validated_carriers: Config.validated_carriers(),
+      recognized_carriers: Config.supported_carriers(),
       platform_strategy: %{
         android: [:wifi_direct, :wifi_aware_later],
         ios: [:multipeer],

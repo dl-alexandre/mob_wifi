@@ -30,18 +30,20 @@ defmodule Mob.WifiTest do
       assert :ok =
                Mob.Wifi.validate_config(
                  platform: :android,
-                 evidence_mode: :diagnostic,
+                 mode: :test,
                  max_frame_bytes: 4096,
                  discovery: :native,
                  log_level: :info,
                  native?: false
                )
 
+      assert :ok = Mob.Wifi.validate_config(evidence_mode: :diagnostic)
+
       assert {:error, {:invalid_config, :platform, :web}} =
                Mob.Wifi.validate_config(platform: :web)
 
-      assert {:error, {:invalid_config, :evidence_mode, :lab}} =
-               Mob.Wifi.validate_config(evidence_mode: :lab)
+      assert {:error, {:invalid_config, :mode, :lab}} =
+               Mob.Wifi.validate_config(mode: :lab)
 
       assert {:error, {:invalid_config, :max_frame_bytes, 0}} =
                Mob.Wifi.validate_config(max_frame_bytes: 0)

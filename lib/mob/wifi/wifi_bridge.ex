@@ -13,8 +13,6 @@ defmodule Mob.Wifi.WifiBridge do
     @behaviour Mob.Transport
   end
 
-  require Logger
-
   alias Mob.Wifi.Telemetry
 
   @default_max_frame_bytes 256 * 1024
@@ -62,8 +60,6 @@ defmodule Mob.Wifi.WifiBridge do
         Keyword.get(opts, :max_frame_bytes, config_value(config, :max_frame_bytes)) ||
           @default_max_frame_bytes
     }
-
-    Logger.metadata(mob_wifi_carrier: state.carrier)
 
     Telemetry.execute([:mob_wifi, :bridge, :started], %{system_time: System.system_time()}, %{
       carrier: state.carrier,
@@ -145,7 +141,7 @@ defmodule Mob.Wifi.WifiBridge do
   defp send_native(nil, _peer_id, _frame, _opts), do: {:error, :native_client_not_configured}
 
   defp send_native(client, peer_id, frame, opts) do
-    apply(client, :send_frame, [peer_id, frame, opts])
+    client.send_frame(peer_id, frame, opts)
   end
 
   defp emit_event({:peer_up, peer_id, metadata}, event_target) when is_map(metadata) do
