@@ -107,13 +107,19 @@ defmodule Mob.Wifi.Config do
       {:ok, _validated} ->
         :ok
 
-      {:error, %NimbleOptions.ValidationError{key: :carrier, value: carrier}} ->
-        raise Mob.Wifi.CarrierRejectedError,
-          carrier: carrier,
-          reason: :unsupported_carrier
+      {:error, error} when is_exception(error, NimbleOptions.ValidationError) ->
+        case error.key do
+          :carrier ->
+            raise Mob.Wifi.CarrierRejectedError,
+              carrier: error.value,
+              reason: :unsupported_carrier
 
-      {:error, %NimbleOptions.ValidationError{key: key, value: value}} ->
-        {:error, {:invalid_config, key, value}}
+          key ->
+            {:error, {:invalid_config, key, error.value}}
+        end
+
+      {:error, other} ->
+        {:error, other}
     end
   end
 end

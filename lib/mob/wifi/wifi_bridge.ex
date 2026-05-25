@@ -9,10 +9,6 @@ defmodule Mob.Wifi.WifiBridge do
 
   use GenServer
 
-  if Code.ensure_loaded?(Mob.Transport) do
-    @behaviour Mob.Transport
-  end
-
   alias Mob.Wifi.{Error, Telemetry}
 
   @default_max_frame_bytes 256 * 1024
@@ -46,6 +42,23 @@ defmodule Mob.Wifi.WifiBridge do
   end
 
   def stop(bridge), do: GenServer.stop(bridge)
+
+  @doc "Returns current peers known to the bridge (minimal impl returns empty for now)."
+  @spec peers(GenServer.server()) :: [Mob.Transport.peer()]
+  def peers(bridge), do: GenServer.call(bridge, :peers)
+
+  @doc "Static capabilities declared by this wifi transport adapter."
+  def capabilities, do: [:wifi]
+
+  @doc "Static metadata declared by this wifi transport adapter."
+  def metadata do
+    %{
+      max_frame_size: @default_max_frame_bytes,
+      reliable: false,
+      discovery_latency_ms: 5_000,
+      typical_latency_ms: 100
+    }
+  end
 
   @impl true
   def init(opts) do
@@ -99,9 +112,15 @@ defmodule Mob.Wifi.WifiBridge do
     {:reply, reply, state}
   end
 
+  @impl true
   def handle_call({:receive_native_event, event}, _from, state) do
     reply = emit_event(event, state.event_target)
     {:reply, reply, state}
+  end
+
+  @impl true
+  def handle_call(:peers, _from, state) do
+    {:reply, [], state}
   end
 
   defp require_event_target(opts) do
@@ -196,6 +215,7 @@ defmodule Mob.Wifi.WifiBridge do
     reason = {:unknown_native_event, event}
     error = Error.new(reason, details: %{event: event})
     Telemetry.execute([:mob_wifi, :bridge, :error], %{count: 1}, %{reason: reason, error: error})
+    # Canonical Mob.Transport error event (see Mob.Transport.Event.normalize/1).
     send(event_target, {:transport_error, reason})
     {:error, reason}
   end

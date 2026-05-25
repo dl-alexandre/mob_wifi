@@ -141,12 +141,13 @@ defmodule Mob.Wifi.WifiBridgeTest do
       GenServer.stop(bridge)
     end
 
-    test "emits transport_error for unknown native events", %{telemetry_ref: telemetry_ref} do
+    test "emits normalized error for unknown native events", %{telemetry_ref: telemetry_ref} do
       {:ok, bridge} = WifiBridge.start_link(event_target: self())
 
       assert {:error, {:unknown_native_event, %{bad: true}}} =
                WifiBridge.receive_native_event(bridge, %{bad: true})
 
+      # Canonical Mob.Transport error event shape (see Mob.Transport.Event.normalize/1).
       assert_receive {:transport_error, {:unknown_native_event, %{bad: true}}}
 
       assert_receive {^telemetry_ref, [:mob_wifi, :bridge, :error], %{count: 1},

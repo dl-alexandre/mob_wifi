@@ -46,14 +46,24 @@ defmodule Mob.Wifi.MixProject do
   end
 
   defp deps do
-    [
-      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
-      {:nimble_options, "~> 1.1"},
-      {:stream_data, "~> 1.2", only: :test},
-      {:telemetry, "~> 1.3"},
-      {:ex_doc, "~> 0.40.2", only: :dev, runtime: false}
-    ]
+    transport_dep() ++
+      [
+        {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+        {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
+        {:nimble_options, "~> 1.1"},
+        {:stream_data, "~> 1.2", only: :test},
+        {:telemetry, "~> 1.3"},
+        {:ex_doc, "~> 0.40.2", only: :dev, runtime: false}
+      ]
+  end
+
+  # Resolve the shared Mob.Transport contract from the sibling app when developed
+  # inside the umbrella; omit it entirely from the published package (the
+  # behaviour is applied optionally via Code.ensure_loaded?/1).
+  defp transport_dep do
+    if File.exists?(Path.expand("../mob_transport/mix.exs", __DIR__)),
+      do: [{:mob_transport, in_umbrella: true}],
+      else: []
   end
 
   defp dialyzer do

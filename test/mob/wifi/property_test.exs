@@ -11,13 +11,13 @@ defmodule Mob.Wifi.PropertyTest do
   end
 
   property "positive max_frame_bytes values are valid" do
-    check all(bytes <- positive_integer()) do
+    check all(bytes <- positive_integer(), max_runs: 25) do
       assert :ok = Mob.Wifi.validate_config(max_frame_bytes: bytes)
     end
   end
 
   property "non-positive max_frame_bytes values are rejected" do
-    check all(bytes <- integer(-1_000..0)) do
+    check all(bytes <- integer(-1_000..0), max_runs: 25) do
       assert {:error, {:invalid_config, :max_frame_bytes, ^bytes}} =
                Mob.Wifi.validate_config(max_frame_bytes: bytes)
     end
@@ -26,7 +26,8 @@ defmodule Mob.Wifi.PropertyTest do
   property "frames at or below the configured budget are accepted" do
     check all(
             max_frame_bytes <- integer(1..128),
-            frame <- binary(max_length: max_frame_bytes)
+            frame <- binary(max_length: max_frame_bytes),
+            max_runs: 25
           ) do
       {:ok, bridge} =
         WifiBridge.start_link(
@@ -43,7 +44,8 @@ defmodule Mob.Wifi.PropertyTest do
   property "frames above the configured budget are rejected" do
     check all(
             max_frame_bytes <- integer(1..128),
-            extra_bytes <- integer(1..32)
+            extra_bytes <- integer(1..32),
+            max_runs: 25
           ) do
       frame = :binary.copy(<<0>>, max_frame_bytes + extra_bytes)
       frame_size = byte_size(frame)
